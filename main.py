@@ -335,12 +335,38 @@ Keep it concise and actionable."""
         # Step 5: Generate brief
         brief_text = await llm_complete(prompt)
         
+        # Build events with prices for response
+        events_with_prices = []
+        for e in events[:3]:
+            event_markets = [m for m in markets_data if m.get("event_id") == e.get("event_id")]
+            markets_summary = []
+            for m in event_markets:
+                market_info = {
+                    "market_id": m.get("market_id"),
+                    "title": m.get("title"),
+                    "status": m.get("status"),
+                    "buy_yes_price": float(m.get("buy_yes_price")) if m.get("buy_yes_price") else None,
+                    "buy_no_price": float(m.get("buy_no_price")) if m.get("buy_no_price") else None,
+                    "volume": float(m.get("volume", 0) or 0),
+                    "provider": m.get("provider")
+                }
+                markets_summary.append(market_info)
+            
+            events_with_prices.append({
+                "event_id": e.get("event_id"),
+                "title": e.get("title"),
+                "category": e.get("category"),
+                "subcategory": e.get("subcategory"),
+                "provider": e.get("provider"),
+                "markets": markets_summary
+            })
+        
         return {
             "query": req.query,
             "events_found": len(events),
             "traders_analyzed": len(top_traders),
             "brief": brief_text,
-            "events": [{"title": e.get("title"), "category": e.get("category")} for e in events[:3]]
+            "events": events_with_prices
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
