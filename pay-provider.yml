@@ -1,0 +1,56 @@
+name: smart-money-api
+subdomain: smart-money
+title: 'Smart Money Market Intelligence API'
+description: 'Semantic search for prediction markets with live prices and trader intelligence'
+category: data
+version: v1
+routing:
+  type: proxy
+  url: http://localhost:8010/
+operator:
+  currencies:
+    usd: ['USDC']
+  network: localnet
+  fee_payer: true
+endpoints:
+  - method: GET
+    path: 'health'
+    resource: 'health'
+    description: 'Health check endpoint'
+    # No metering = free
+
+  - method: POST
+    path: 'search'
+    resource: 'search'
+    description: 'Semantic search for prediction market events with live prices'
+    metering:
+      dimensions:
+        - direction: usage
+          unit: requests
+          scale: 1
+          tiers:
+            - price_usd: 0.01
+
+  - method: POST
+    path: 'brief'
+    resource: 'brief'
+    description: 'Full intelligence brief with market analysis and top traders'
+    metering:
+      dimensions:
+        - direction: usage
+          unit: requests
+          scale: 1
+          tiers:
+            - price_usd: 0.05
+
+  - method: GET
+    path: 'trader/{pubkey}'
+    resource: 'trader'
+    description: 'Get trader reputation and performance metrics'
+    metering:
+      dimensions:
+        - direction: usage
+          unit: requests
+          scale: 1
+          tiers:
+            - price_usd: 0.02
